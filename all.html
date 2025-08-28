@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Notifications</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f6f8;
+      color: #333;
+    }
+    h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #0073e6;
+    }
+    .date-group {
+      margin-bottom: 25px;
+    }
+    .date-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #555;
+      font-size: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .message {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+    .meta {
+      font-size: 13px;
+      color: #666;
+    }
+    .meta span {
+      display: inline-block;
+      margin-right: 12px;
+    }
+    .time {
+      float: right;
+      color: #999;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h2>📜 All Notifications</h2>
+  <div id="notificationsContainer"></div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
+
+    async function loadAll() {
+      const res = await fetch(API_URL);
+      let data = await res.json();
+      data.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+
+      const container = document.getElementById("notificationsContainer");
+      container.innerHTML = "";
+
+      // Group by date
+      const grouped = {};
+      data.forEach(item => {
+        const dateStr = new Date(item.Timestamp).toLocaleDateString();
+        if (!grouped[dateStr]) grouped[dateStr] = [];
+        grouped[dateStr].push(item);
+      });
+
+      for (const date in grouped) {
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "date-group";
+        groupDiv.innerHTML = `<div class="date-title">${date}</div>`;
+
+        grouped[date].forEach(item => {
+          const timeStr = new Date(item.Timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="message">🔔 ${item.Message}</div>
+            <div class="meta">
+              <span><strong>From:</strong> ${item.From}</span>
+              <span><strong>Agent:</strong> ${item.Agent}</span>
+              <span class="time">${timeStr}</span>
+            </div>
+          `;
+          groupDiv.appendChild(card);
+        });
+
+        container.appendChild(groupDiv);
+      }
+    }
+
+    loadAll();
+  </script>
+</body>
+</html>

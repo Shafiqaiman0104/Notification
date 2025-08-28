@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Notification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+    h2 {
+      color: #0073e6;
+      margin-bottom: 20px;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      background: #0073e6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background: #005bb5;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: green;
+    }
+    .status.error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h2>➕ Add New Notification</h2>
+  <form id="notifForm">
+    <label for="message">Message</label>
+    <textarea id="message" name="message" required></textarea>
+
+    <label for="from">From</label>
+    <input type="text" id="from" name="from" required>
+
+    <label for="agent">Agent</label>
+    <input type="text" id="agent" name="agent" required>
+
+    <button type="submit">Send Notification</button>
+  </form>
+
+  <div class="status" id="status"></div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
+
+    document.getElementById("notifForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const postData = new URLSearchParams(formData); // ⬅️ like your booking form
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: postData.toString()
+        });
+
+        const result = await res.json();
+
+        if (result.status === "success") {
+          document.getElementById("status").textContent = "✅ Notification added!";
+          document.getElementById("status").classList.remove("error");
+          this.reset();
+        } else {
+          document.getElementById("status").textContent = "❌ Failed: " + (result.error || "Unknown error");
+          document.getElementById("status").classList.add("error");
+        }
+      } catch (err) {
+        document.getElementById("status").textContent = "❌ Failed to add notification: " + err;
+        document.getElementById("status").classList.add("error");
+      }
+    });
+  </script>
+</body>
+</html>
