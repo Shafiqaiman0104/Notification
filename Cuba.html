@@ -59,12 +59,12 @@
 
   let allUnread = JSON.parse(localStorage.getItem("allUnread") || "[]");
   let lastSeenTime = localStorage.getItem("lastSeenTime") ? new Date(localStorage.getItem("lastSeenTime")) : null;
+  let lastSoundTime = localStorage.getItem("lastSoundTime") ? new Date(localStorage.getItem("lastSoundTime")) : lastSeenTime;
 
   function saveState() {
     localStorage.setItem("allUnread", JSON.stringify(allUnread));
-    if (lastSeenTime) {
-      localStorage.setItem("lastSeenTime", lastSeenTime.toISOString());
-    }
+    if (lastSeenTime) localStorage.setItem("lastSeenTime", lastSeenTime.toISOString());
+    if (lastSoundTime) localStorage.setItem("lastSoundTime", lastSoundTime.toISOString());
   }
 
   function handleBellClick() {
@@ -89,6 +89,7 @@
       if (!lastSeenTime && data.length > 0) {
         // first load: set lastSeenTime but do not trigger sound
         lastSeenTime = new Date(data[0].Timestamp);
+        lastSoundTime = lastSeenTime;
         saveState();
         return;
       }
@@ -96,14 +97,21 @@
       let newOnes = data.filter(n => new Date(n.Timestamp) > lastSeenTime);
 
       if (newOnes.length > 0) {
-        // play sound once for new arrivals
-        document.getElementById("dingSound").play().catch(()=>{});
+        const newestTime = new Date(newOnes[0].Timestamp);
 
-        // prepend new ones to ALL unread
+        // 🔔 Only play sound if there’s something newer than lastSoundTime
+        if (!lastSoundTime || newestTime > lastSoundTime) {
+          const ding = document.getElementById("dingSound");
+          ding.currentTime = 0;
+          ding.play().catch(()=>{});
+          lastSoundTime = newestTime;
+        }
+
+        // prepend new ones to unread list
         allUnread = [...newOnes, ...allUnread];
 
-        // update last seen time to newest
-        lastSeenTime = new Date(newOnes[0].Timestamp);
+        // update last seen time to newest (for filtering next fetch)
+        lastSeenTime = newestTime;
 
         updateUI();
         saveState();
@@ -135,7 +143,7 @@
         <button>See more...</button>
       `;
 
-      // click on card removes it from allUnread
+      // click on card removes it from unread
       div.addEventListener("click", () => {
         allUnread.splice(idx, 1);
         updateUI();
