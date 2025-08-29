@@ -86,11 +86,11 @@ function login() {
 
         const userType = foundUser.type.toLowerCase();
         if (userType === "admin") {
-          window.location.href = "adminpage.html";
+          window.location.href = "merge.html";
         } else if (userType === "staff") {
           window.location.href = "merge.html";
         } else if (userType === "co") {
-          window.location.href = "coDashboard.html";
+          window.location.href = "merge.html";
         } else {
           errorMsg.textContent = "Unknown user type.";
         }
