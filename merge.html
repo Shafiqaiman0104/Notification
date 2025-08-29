@@ -319,6 +319,10 @@
 <header>
     <div class="logo">🏕️ Campsite Admin Portal</div>
     <div class="welcome-mobile" id="mobileWelcome"></div>
+              <!-- 🔔 Notification Bell -->
+    <div class="bell" onclick="handleBellClick()">
+      🔔 <span id="badge" class="badge">0</span>
+    </div>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav>
       <span id="welcomeText" style="margin-right: 1rem; font-weight: bold;"></span>
@@ -353,10 +357,6 @@
       <button class="tab" onclick="location.href='apCheckAvailability.html'">Check Availability</button>
       <button class="tab" onclick="location.href='apBooking.html'">New Booking</button>
       <button class="tab" onclick="location.href='apAllBooking.html'">All Bookings</button>
-           <!-- 🔔 Notification Bell -->
-    <div class="bell" onclick="handleBellClick()">
-      🔔 <span id="badge" class="badge">0</span>
-    </div>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </nav>
 
