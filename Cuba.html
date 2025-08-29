@@ -54,112 +54,111 @@
     <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
     <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
   </audio>
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
+  let allUnread = JSON.parse(localStorage.getItem("allUnread") || "[]");
+  let lastSeenTime = localStorage.getItem("lastSeenTime") ? new Date(localStorage.getItem("lastSeenTime")) : null;
 
-    let unread = JSON.parse(localStorage.getItem("unread") || "[]");
-    let lastSeenTime = localStorage.getItem("lastSeenTime") ? new Date(localStorage.getItem("lastSeenTime")) : null;
+  function saveState() {
+    localStorage.setItem("allUnread", JSON.stringify(allUnread));
+    if (lastSeenTime) {
+      localStorage.setItem("lastSeenTime", lastSeenTime.toISOString());
+    }
+  }
 
-    function saveState() {
-      localStorage.setItem("unread", JSON.stringify(unread));
-      if (lastSeenTime) {
-        localStorage.setItem("lastSeenTime", lastSeenTime.toISOString());
+  function handleBellClick() {
+    const badge = document.getElementById("badge");
+    if (badge.style.display === "none" || badge.innerText === "0") {
+      // No unread → go to all.html
+      window.location.href = "all.html";
+    } else {
+      // Toggle dropdown
+      document.getElementById("dropdown").classList.toggle("active");
+    }
+  }
+
+  async function fetchNotifications() {
+    try {
+      const res = await fetch(API_URL);
+      let data = await res.json();
+
+      // sort newest first
+      data.sort((a,b)=> new Date(b.Timestamp) - new Date(a.Timestamp));
+
+      if (!lastSeenTime && data.length > 0) {
+        // first load: set lastSeenTime but do not trigger sound
+        lastSeenTime = new Date(data[0].Timestamp);
+        saveState();
+        return;
       }
+
+      let newOnes = data.filter(n => new Date(n.Timestamp) > lastSeenTime);
+
+      if (newOnes.length > 0) {
+        // play sound once for new arrivals
+        document.getElementById("dingSound").play().catch(()=>{});
+
+        // prepend new ones to ALL unread
+        allUnread = [...newOnes, ...allUnread];
+
+        // update last seen time to newest
+        lastSeenTime = new Date(newOnes[0].Timestamp);
+
+        updateUI();
+        saveState();
+      }
+    } catch(err) {
+      console.error("Fetch error", err);
+    }
+  }
+
+  function updateUI() {
+    const badge = document.getElementById("badge");
+    const dropdown = document.getElementById("dropdown");
+
+    if (allUnread.length > 0) {
+      badge.innerText = allUnread.length; // ✅ full count
+      badge.style.display = "inline";
+    } else {
+      badge.style.display = "none";
     }
 
-    function handleBellClick() {
-      const badge = document.getElementById("badge");
-      if (badge.style.display === "none" || badge.innerText === "0") {
-        // No unread → go to all.html
-        window.location.href = "all.html";
-      } else {
-        // Toggle dropdown
-        document.getElementById("dropdown").classList.toggle("active");
-      }
-    }
+    dropdown.innerHTML = "";
+    allUnread.slice(0,5).forEach((n, idx) => {  // ✅ show only 5
+      const div = document.createElement("div");
+      div.className = "notification";
+      div.innerHTML = `
+        <strong>🔔 New Notification</strong>
+        <div>"${n.Message}"</div>
+        <div>From: ${n.From} | Agent: ${n.Agent}</div>
+        <button>See more...</button>
+      `;
 
-    async function fetchNotifications() {
-      try {
-        const res = await fetch(API_URL);
-        let data = await res.json();
-
-        // sort newest first
-        data.sort((a,b)=> new Date(b.Timestamp) - new Date(a.Timestamp));
-
-        if (!lastSeenTime && data.length > 0) {
-          // first load: set lastSeenTime but do not trigger sound
-          lastSeenTime = new Date(data[0].Timestamp);
-          saveState();
-          return;
-        }
-
-        let newOnes = data.filter(n => new Date(n.Timestamp) > lastSeenTime);
-
-        if (newOnes.length > 0) {
-          // play sound once for new arrivals
-          document.getElementById("dingSound").play().catch(()=>{});
-          
-          // prepend new ones, keep max 5
-          unread = [...newOnes, ...unread].slice(0, 5);
-
-          // update last seen time to newest
-          lastSeenTime = new Date(newOnes[0].Timestamp);
-
-          updateUI();
-          saveState();
-        }
-      } catch(err) {
-        console.error("Fetch error", err);
-      }
-    }
-
-    function updateUI() {
-      const badge = document.getElementById("badge");
-      const dropdown = document.getElementById("dropdown");
-
-      if (unread.length > 0) {
-        badge.innerText = unread.length;
-        badge.style.display = "inline";
-      } else {
-        badge.style.display = "none";
-      }
-
-      dropdown.innerHTML = "";
-      unread.forEach((n, idx) => {
-        const div = document.createElement("div");
-        div.className = "notification";
-        div.innerHTML = `
-          <strong>🔔 New Notification</strong>
-          <div>"${n.Message}"</div>
-          <div>From: ${n.From} | Agent: ${n.Agent}</div>
-          <button>See more...</button>
-        `;
-
-        // click on card removes it
-        div.addEventListener("click", () => {
-          unread.splice(idx, 1);
-          updateUI();
-          saveState();
-        });
-
-        // prevent button from removing notification, go to all.html
-        div.querySelector("button").addEventListener("click", (e) => {
-          e.stopPropagation();
-          window.location.href = "all.html";
-        });
-
-        dropdown.appendChild(div);
+      // click on card removes it from allUnread
+      div.addEventListener("click", () => {
+        allUnread.splice(idx, 1);
+        updateUI();
+        saveState();
       });
-    }
 
-    // restore UI from storage on load
-    updateUI();
+      // prevent button from removing notification, go to all.html
+      div.querySelector("button").addEventListener("click", (e) => {
+        e.stopPropagation();
+        window.location.href = "all.html";
+      });
 
-    // initial fetch
-    fetchNotifications();
-    // poll every 10s
-    setInterval(fetchNotifications, 10000);
-  </script>
+      dropdown.appendChild(div);
+    });
+  }
+
+  // restore UI from storage on load
+  updateUI();
+
+  // initial fetch
+  fetchNotifications();
+  // poll every 10s
+  setInterval(fetchNotifications, 10000);
+</script>
 </body>
 </html>
