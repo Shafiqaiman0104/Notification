@@ -3,73 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Page</title>
+  <title>Agent Dashboard</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; }
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #333;
-      color: white;
-      padding: 10px 20px;
-    }
-    nav {
-      display: flex;
-      gap: 15px;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    /* Notification bell */
-    .bell {
-      cursor: pointer;
-      font-size: 22px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #333; color: white; padding: 10px 20px;
       position: relative;
     }
+    nav { display: flex; gap: 15px; }
+    nav a {
+      color: white; text-decoration: none; font-weight: bold;
+    }
+    nav a:hover { text-decoration: underline; }
+
+    .bell {
+      position: relative; font-size: 22px; cursor: pointer;
+    }
     .badge {
-      background: red;
-      color: #fff;
-      border-radius: 50%;
-      padding: 2px 6px;
-      font-size: 12px;
-      position: absolute;
-      top: -5px;
-      right: -10px;
-      display: none;
+      position: absolute; top: -8px; right: -10px;
+      background: red; color: white; border-radius: 50%;
+      padding: 2px 6px; font-size: 12px; display: none;
     }
     .dropdown {
       display: none;
-      position: absolute;
-      top: 50px;
-      right: 20px;
-      background: #fff;
-      border: 1px solid #ccc;
-      width: 250px;
-      box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
+      position: absolute; right: 20px; top: 60px;
+      background: white; width: 320px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      border-radius: 8px; overflow: hidden;
       z-index: 999;
     }
-    .dropdown.active {
-      display: block;
-    }
+    .dropdown.active { display: block; }
     .notification {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
+      padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;
     }
+    .notification strong { color: #0073e6; display: block; margin-bottom: 5px; }
     .notification button {
-      margin-top: 5px;
-      font-size: 12px;
+      margin-top: 6px; padding: 5px 10px;
+      background: #0073e6; color: white; border: none;
+      border-radius: 4px; cursor: pointer; font-size: 12px;
     }
+    .notification button:hover { background: #005bb5; }
   </style>
 </head>
 <body>
@@ -82,87 +56,116 @@
       <a href="#" onclick="logout()">Logout</a>
     </nav>
 
-    <!-- Notification Bell -->
     <div class="bell" onclick="handleBellClick()">
       🔔 <span id="badge" class="badge">0</span>
     </div>
-    <div id="dropdown" class="dropdown"></div>
   </header>
-  <!-- Sound -->
-  <audio id="notifSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3" preload="auto"></audio>
 
+  <div id="dropdown" class="dropdown"></div>
+
+  <!-- Sound -->
+  <audio id="dingSound" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
+  </audio>
   <script>
     // --- Logout ---
     function logout() {
-      localStorage.removeItem("username"); // Only clear login, keep notifications
+      localStorage.removeItem("username"); // only clear login, keep notifications
       window.location.href = "login.html";
     }
 
-    // --- Notifications API ---
-    const badge = document.getElementById("badge");
-    const dropdown = document.getElementById("dropdown");
-    const notifSound = document.getElementById("notifSound");
+    // --- Notifications ---
+    const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
+    let unread = JSON.parse(localStorage.getItem("unread") || "[]");
+    let lastSeenTime = localStorage.getItem("lastSeenTime") ? new Date(localStorage.getItem("lastSeenTime")) : null;
+
+    function saveState() {
+      localStorage.setItem("unread", JSON.stringify(unread));
+      if (lastSeenTime) {
+        localStorage.setItem("lastSeenTime", lastSeenTime.toISOString());
+      }
+    }
 
     function handleBellClick() {
-      dropdown.classList.toggle("active");
+      const badge = document.getElementById("badge");
+      if (badge.style.display === "none" || badge.innerText === "0") {
+        window.location.href = "all.html"; // no unread → go to all.html
+      } else {
+        document.getElementById("dropdown").classList.toggle("active");
+      }
     }
 
-    function fetchNotifications() {
-      return JSON.parse(localStorage.getItem("notifications")) || [];
-    }
+    async function fetchNotifications() {
+      try {
+        const res = await fetch(API_URL);
+        let data = await res.json();
 
-    function saveNotifications(notifs) {
-      localStorage.setItem("notifications", JSON.stringify(notifs));
-    }
+        data.sort((a,b)=> new Date(b.Timestamp) - new Date(a.Timestamp));
 
-    function addNotification(msg) {
-      let notifs = fetchNotifications();
-      notifs.unshift({
-        message: msg,
-        time: new Date().toLocaleString(),
-        read: false
-      });
-      saveNotifications(notifs);
-      updateUI();
-      notifSound.play();
-    }
+        if (!lastSeenTime && data.length > 0) {
+          lastSeenTime = new Date(data[0].Timestamp);
+          saveState();
+          return;
+        }
 
-    function markAsRead(index) {
-      let notifs = fetchNotifications();
-      notifs[index].read = true;
-      saveNotifications(notifs);
-      updateUI();
+        let newOnes = data.filter(n => new Date(n.Timestamp) > lastSeenTime);
+
+        if (newOnes.length > 0) {
+          document.getElementById("dingSound").play().catch(()=>{});
+          unread = [...newOnes, ...unread].slice(0, 5);
+          lastSeenTime = new Date(newOnes[0].Timestamp);
+          updateUI();
+          saveState();
+        }
+      } catch(err) {
+        console.error("Fetch error", err);
+      }
     }
 
     function updateUI() {
-      const notifs = fetchNotifications();
-      const unread = notifs.filter(n => !n.read).length;
-      if (unread > 0) {
-        badge.textContent = unread;
+      const badge = document.getElementById("badge");
+      const dropdown = document.getElementById("dropdown");
+
+      if (unread.length > 0) {
+        badge.innerText = unread.length;
         badge.style.display = "inline";
       } else {
         badge.style.display = "none";
       }
 
       dropdown.innerHTML = "";
-      if (notifs.length === 0) {
-        dropdown.innerHTML = "<div class='notification'>No notifications</div>";
-      } else {
-        notifs.forEach((n, i) => {
-          let div = document.createElement("div");
-          div.className = "notification";
-          div.innerHTML = `
-            <strong>${n.message}</strong><br>
-            <small>${n.time}</small><br>
-            ${n.read ? "" : `<button onclick="markAsRead(${i})">Mark as read</button>`}
-          `;
-          dropdown.appendChild(div);
+      unread.forEach((n, idx) => {
+        const div = document.createElement("div");
+        div.className = "notification";
+        div.innerHTML = `
+          <strong>🔔 New Notification</strong>
+          <div>"${n.Message}"</div>
+          <div>From: ${n.From} | Agent: ${n.Agent}</div>
+          <button>See more...</button>
+        `;
+
+        // click on card → remove (mark as read)
+        div.addEventListener("click", () => {
+          unread.splice(idx, 1);
+          updateUI();
+          saveState();
         });
-      }
+
+        // button → go to all.html
+        div.querySelector("button").addEventListener("click", (e) => {
+          e.stopPropagation();
+          window.location.href = "all.html";
+        });
+
+        dropdown.appendChild(div);
+      });
     }
 
-    // Run on page load
+    // init
     updateUI();
+    fetchNotifications();
+    setInterval(fetchNotifications, 10000);
   </script>
 </body>
 </html>
