@@ -335,7 +335,7 @@
     <div class="welcome-mobile" id="mobileWelcome"></div>
               <!-- 🔔 Notification Bell -->
     <div class="bell" id="mobileBell" onclick="handleBellClick()">
-      🔔 <span id="badge" class="badge">0</span>
+      🔔 <span id="mobileBadge" class="badge">0</span>
     </div>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav>
@@ -373,7 +373,7 @@
       <button class="tab" onclick="location.href='apAllBooking.html'">All Bookings</button>
        <!-- 🔔 Notification Bell -->
     <div class="bell" id="pcBell" onclick="handleBellClick()">
-      🔔 <span id="badge" class="badge">0</span>
+      🔔 <span id="pcBadge" class="badge">0</span>
     </div>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </nav>
@@ -988,16 +988,18 @@ window.onload = fetchAll;
       }
     }
 
-    function handleBellClick() {
-      const badge = document.getElementById("badge");
-      if (badge.style.display === "none" || badge.innerText === "0") {
-        // No unread → go to all.html
-        window.location.href = "all.html";
-      } else {
-        // Toggle dropdown
-        document.getElementById("dropdownNoti").classList.toggle("active");
-      }
-    }
+   function handleBellClick() {
+  const pcBadge = document.getElementById("pcBadge");
+  const mobileBadge = document.getElementById("mobileBadge");
+  const badge = pcBadge.style.display !== "none" ? pcBadge : mobileBadge;
+
+  if (badge.innerText === "0") {
+    window.location.href = "all.html";
+  } else {
+    document.getElementById("dropdownNoti").classList.toggle("active");
+  }
+}
+
 
     async function fetchNotifications() {
       try {
