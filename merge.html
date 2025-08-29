@@ -259,12 +259,14 @@
       background: red; color: white; border-radius: 50%;
       padding: 2px 6px; font-size: 12px; display: none;
     }
-    .dropdownNoti {
+     .dropdownNoti {
       display: none;
-      position: absolute; right: 20px; top: 60px;
+      position: absolute; right: 20px; top: 50px;
       background: white; width: 320px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      border-radius: 8px; overflow: hidden;
+      border-radius: 8px; 
+      overflow-y: auto;       /* enable vertical scroll */
+      max-height: 60vh;       /* limit height to 60% of screen */
       z-index: 999;
     }
     .dropdownNoti.active { display: block; }
@@ -973,7 +975,8 @@ renderCommission(); // 👈 add this here
 function refreshAll(){ fetchAll(); }
 window.onload = fetchAll;
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
+  
+ const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
 
     let unread = JSON.parse(localStorage.getItem("unread") || "[]");
     let lastSeenTime = localStorage.getItem("lastSeenTime") ? new Date(localStorage.getItem("lastSeenTime")) : null;
@@ -1017,8 +1020,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09
           // play sound once for new arrivals
           document.getElementById("dingSound").play().catch(()=>{});
           
-          // prepend new ones, keep max 5
-          unread = [...newOnes, ...unread].slice(0, 5);
+          // prepend new ones
+          unread = [...newOnes, ...unread];
 
           // update last seen time to newest
           lastSeenTime = new Date(newOnes[0].Timestamp);
@@ -1077,7 +1080,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09
     fetchNotifications();
     // poll every 10s
     setInterval(fetchNotifications, 10000);
-  
 </script>
 </body>
 </html>
