@@ -118,6 +118,9 @@
     margin-left: auto;
     margin-right: 0.5rem;
   }
+   #mobileBell {
+    display: none;
+  }
   main {
     padding: 1.5rem;
     max-width: 1000px;
@@ -309,6 +312,9 @@
     .welcome-mobile {
       display: block;
     }
+    #mobileBell {
+      display: block;
+    }
     nav #welcomeText {
       display: none;
     }
@@ -320,7 +326,7 @@
     <div class="logo">🏕️ Campsite Admin Portal</div>
     <div class="welcome-mobile" id="mobileWelcome"></div>
               <!-- 🔔 Notification Bell -->
-    <div class="bell" onclick="handleBellClick()">
+    <div class="bell" id="mobileBell" onclick="handleBellClick()">
       🔔 <span id="badge" class="badge">0</span>
     </div>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
