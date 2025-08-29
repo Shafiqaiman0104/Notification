@@ -975,7 +975,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09
         window.location.href = "all.html";
       } else {
         // Toggle dropdown
-        document.getElementById("dropdown").classList.toggle("active");
+        document.getElementById("dropdownNoti").classList.toggle("active");
       }
     }
 
@@ -1016,7 +1016,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09
 
     function updateUI() {
       const badge = document.getElementById("badge");
-      const dropdown = document.getElementById("dropdown");
+      const dropdownNoti = document.getElementById("dropdownNoti");
 
       if (unread.length > 0) {
         badge.innerText = unread.length;
@@ -1025,7 +1025,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09
         badge.style.display = "none";
       }
 
-      dropdown.innerHTML = "";
+      dropdownNoti.innerHTML = "";
       unread.forEach((n, idx) => {
         const div = document.createElement("div");
         div.className = "notification";
@@ -1049,7 +1049,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09
           window.location.href = "all.html";
         });
 
-        dropdown.appendChild(div);
+        dropdownNoti.appendChild(div);
       });
     }
 
