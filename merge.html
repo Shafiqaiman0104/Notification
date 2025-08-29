@@ -244,7 +244,35 @@
   .chart-box:last-child {
     flex-basis: 30%;
   }
-
+    /* --- Notification styles --- */
+    .bell {
+      position: relative; font-size: 22px; cursor: pointer;
+    }
+    .badge {
+      position: absolute; top: -8px; right: -10px;
+      background: red; color: white; border-radius: 50%;
+      padding: 2px 6px; font-size: 12px; display: none;
+    }
+    .dropdownNoti {
+      display: none;
+      position: absolute; right: 20px; top: 60px;
+      background: white; width: 320px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      border-radius: 8px; overflow: hidden;
+      z-index: 999;
+    }
+    .dropdownNoti.active { display: block; }
+    .notification {
+      padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;
+    }
+    .notification strong { color: #0073e6; display: block; margin-bottom: 5px; }
+    .notification button {
+      margin-top: 6px; padding: 5px 10px;
+      background: #0073e6; color: white; border: none;
+      border-radius: 4px; cursor: pointer; font-size: 12px;
+    }
+    .notification button:hover { background: #005bb5; }
+  
   @media (max-width: 768px) {
   .charts-container {
     grid-template-columns: 1fr;
@@ -327,6 +355,10 @@
       <button class="tab" onclick="location.href='apAllBooking.html'">All Bookings</button>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </nav>
+     <!-- 🔔 Notification Bell -->
+    <div class="bell" onclick="handleBellClick()">
+      🔔 <span id="badge" class="badge">0</span>
+    </div>
     <div class="mobile-menu" id="mobileMenu">
       <button class="tab active">Dashboard</button>
       <button class="tab" onclick="location.href='apPendingCom.html'">Pending Commissions</button>
@@ -343,6 +375,14 @@
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </header>
+    <div id="dropdownNoti" class="dropdownNoti"></div>
+
+  <!-- Sound -->
+  <audio id="dingSound" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
+  </audio>
+
   <main>
     <h2>Admin Dashboard</h2>
     <div class="comm-cards" id="commSummary">
