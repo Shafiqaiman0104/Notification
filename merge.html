@@ -358,6 +358,9 @@
       <button class="tab" onclick="location.href='apCheckAvailability.html'">Check Availability</button>
       <button class="tab" onclick="location.href='apBooking.html'">New Booking</button>
       <button class="tab" onclick="location.href='apAllBooking.html'">All Bookings</button>
+         <div class="bell" onclick="handleBellClick()">
+      🔔 <span id="badge" class="badge" style="display:none">0</span>
+    </div>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </nav>
     <div class="mobile-menu" id="mobileMenu">
@@ -374,9 +377,6 @@
       <button class="tab" onclick="location.href='apBooking.html'">New Booking</button>
       <button class="tab" onclick="location.href='apAllBooking.html'">All Bookings</button>
       <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-   <div class="bell" onclick="handleBellClick()">
-      🔔 <span id="badge" class="badge" style="display:none">0</span>
     </div>
   </header>
   <main>
