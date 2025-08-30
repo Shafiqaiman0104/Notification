@@ -318,15 +318,20 @@
       display: none;
     }
     .dropdownNoti {
-      display: none;
-      position: absolute; right: 20px; top: 50px;
-      background: white; width: 320px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      border-radius: 8px; 
-      overflow-y: auto;       /* enable vertical scroll */
-      max-height: 60vh;       /* limit height to 60% of screen */
-      z-index: 999;
-    }
+    position: fixed;       /* stick to viewport */
+    top: 0;
+    right: -100%;          /* start hidden off screen */
+    left: auto;            /* override desktop left */
+    width: 80%;            /* take most of screen width */
+    height: 100vh;         /* full height */
+    max-height: 100vh;     /* ensure full screen */
+    border-radius: 0;      /* flat edges */
+    transition: right 0.3s ease-in-out;
+  }
+  .dropdownNoti.active {
+    right: 0;              /* slide in */
+    display: block;
+  }  
   }
 </style>  
 </head>
