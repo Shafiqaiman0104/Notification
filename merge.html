@@ -118,12 +118,6 @@
     margin-left: auto;
     margin-right: 0.5rem;
   }
-   #mobileBell {
-    display: none;
-  }
- #pcBell {
-  display: block;
-}
   main {
     padding: 1.5rem;
     max-width: 1000px;
@@ -250,37 +244,7 @@
   .chart-box:last-child {
     flex-basis: 30%;
   }
-    /* --- Notification styles --- */
-    .bell {
-      position: relative; font-size: 22px; cursor: pointer;
-    }
-    .badge {
-      position: absolute; top: -8px; right: -10px;
-      background: red; color: white; border-radius: 50%;
-      padding: 2px 6px; font-size: 12px; display: none;
-    }
-     .dropdownNoti {
-      display: none;
-      position: absolute; right: 20px; top: 50px;
-      background: white; width: 320px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      border-radius: 8px; 
-      overflow-y: auto;       /* enable vertical scroll */
-      max-height: 60vh;       /* limit height to 60% of screen */
-      z-index: 999;
-    }
-    .dropdownNoti.active { display: block; }
-    .notification {
-      padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;
-    }
-    .notification strong { color: #0073e6; display: block; margin-bottom: 5px; }
-    .notification button {
-      margin-top: 6px; padding: 5px 10px;
-      background: #0073e6; color: white; border: none;
-      border-radius: 4px; cursor: pointer; font-size: 12px;
-    }
-    .notification button:hover { background: #005bb5; }
-  
+
   @media (max-width: 768px) {
   .charts-container {
     grid-template-columns: 1fr;
@@ -317,13 +281,7 @@
     .welcome-mobile {
       display: block;
     }
-    #mobileBell {
-      display: block;
-    }
     nav #welcomeText {
-      display: none;
-    }
-    nav #pcBell {
       display: none;
     }
   }
@@ -333,10 +291,6 @@
 <header>
     <div class="logo">🏕️ Campsite Admin Portal</div>
     <div class="welcome-mobile" id="mobileWelcome"></div>
-              <!-- 🔔 Notification Bell -->
-    <div class="bell" id="mobileBell" onclick="handleBellClick()">
-      🔔 <span id="mobileBadge" class="badge">0</span>
-    </div>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav>
       <span id="welcomeText" style="margin-right: 1rem; font-weight: bold;"></span>
@@ -371,13 +325,8 @@
       <button class="tab" onclick="location.href='apCheckAvailability.html'">Check Availability</button>
       <button class="tab" onclick="location.href='apBooking.html'">New Booking</button>
       <button class="tab" onclick="location.href='apAllBooking.html'">All Bookings</button>
-       <!-- 🔔 Notification Bell -->
-    <div class="bell" id="pcBell" onclick="handleBellClick()">
-      🔔 <span id="pcBadge" class="badge">0</span>
-    </div>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </nav>
-
     <div class="mobile-menu" id="mobileMenu">
       <button class="tab active">Dashboard</button>
       <button class="tab" onclick="location.href='apPendingCom.html'">Pending Commissions</button>
@@ -394,14 +343,6 @@
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </header>
-    <div id="dropdownNoti" class="dropdownNoti"></div>
-
-  <!-- Sound -->
-  <audio id="dingSound" preload="auto">
-    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
-    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
-  </audio>
-
   <main>
     <h2>Admin Dashboard</h2>
     <div class="comm-cards" id="commSummary">
@@ -473,7 +414,7 @@
 const username = localStorage.getItem("username") || "Admin";
 // 🔐 Redirect if not logged in (username missing or defaulted to "Admin")
 if (!localStorage.getItem("username") || localStorage.getItem("username") === "Admin") {
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 }
 document.getElementById("welcomeText").textContent = `Welcome ${username} !!`;
 document.getElementById("mobileWelcome").textContent = `Welcome ${username} !!`;
@@ -483,8 +424,8 @@ function toggleMenu() {
 }
 
 function logout() {
-  localStorage.removeItem("username");
-  window.location.href = "login.html";
+  localStorage.clear();
+  window.location.href = "index.html";
 }
 
 const agentId = "AKfycbwZYyoTqEYrTzk2mLPDer4RoLysmRVXakI4__TvENZ4GZRzMFvDcFOP8FX3xqG4hPv2TQ";
@@ -974,114 +915,6 @@ renderCommission(); // 👈 add this here
 
 function refreshAll(){ fetchAll(); }
 window.onload = fetchAll;
-
-  
- const API_URL = "https://script.google.com/macros/s/AKfycbxsqetZ_iRLnZ3mhRcbxX09q4c0aXU_xHzO5JaPkocr0syDM52DsPsGI-raZi2GCpl5/exec";
-
-    let unread = JSON.parse(localStorage.getItem("unread") || "[]");
-    let lastSeenTime = localStorage.getItem("lastSeenTime") ? new Date(localStorage.getItem("lastSeenTime")) : null;
-
-    function saveState() {
-      localStorage.setItem("unread", JSON.stringify(unread));
-      if (lastSeenTime) {
-        localStorage.setItem("lastSeenTime", lastSeenTime.toISOString());
-      }
-    }
-
-   function handleBellClick() {
-  const pcBadge = document.getElementById("pcBadge");
-  const mobileBadge = document.getElementById("mobileBadge");
-  const badge = pcBadge.style.display !== "none" ? pcBadge : mobileBadge;
-
-  if (badge.innerText === "0") {
-    window.location.href = "all.html";
-  } else {
-    document.getElementById("dropdownNoti").classList.toggle("active");
-  }
-}
-
-
-    async function fetchNotifications() {
-      try {
-        const res = await fetch(API_URL);
-        let data = await res.json();
-
-        // sort newest first
-        data.sort((a,b)=> new Date(b.Timestamp) - new Date(a.Timestamp));
-
-        if (!lastSeenTime && data.length > 0) {
-          // first load: set lastSeenTime but do not trigger sound
-          lastSeenTime = new Date(data[0].Timestamp);
-          saveState();
-          return;
-        }
-
-        let newOnes = data.filter(n => new Date(n.Timestamp) > lastSeenTime);
-
-        if (newOnes.length > 0) {
-          // play sound once for new arrivals
-          document.getElementById("dingSound").play().catch(()=>{});
-          
-          // prepend new ones
-          unread = [...newOnes, ...unread];
-
-          // update last seen time to newest
-          lastSeenTime = new Date(newOnes[0].Timestamp);
-
-          updateUI();
-          saveState();
-        }
-      } catch(err) {
-        console.error("Fetch error", err);
-      }
-    }
-
-    function updateUI() {
-      const badge = document.getElementById("badge");
-      const dropdownNoti = document.getElementById("dropdownNoti");
-
-      if (unread.length > 0) {
-        badge.innerText = unread.length;
-        badge.style.display = "inline";
-      } else {
-        badge.style.display = "none";
-      }
-
-      dropdownNoti.innerHTML = "";
-      unread.forEach((n, idx) => {
-        const div = document.createElement("div");
-        div.className = "notification";
-        div.innerHTML = `
-          <strong>🔔 New Notification</strong>
-          <div>"${n.Message}"</div>
-          <div>From: ${n.From} | Agent: ${n.Agent}</div>
-          <button>See more...</button>
-        `;
-
-        // click on card removes it
-        div.addEventListener("click", () => {
-          unread.splice(idx, 1);
-          updateUI();
-          saveState();
-        });
-
-        // prevent button from removing notification, go to all.html
-        div.querySelector("button").addEventListener("click", (e) => {
-          e.stopPropagation();
-          window.location.href = "all.html";
-        });
-
-        dropdownNoti.appendChild(div);
-      });
-    }
-
-    // restore UI from storage on load
-    updateUI();
-
-    // initial fetch
-    fetchNotifications();
-    // poll every 10s
-    setInterval(fetchNotifications, 10000);
 </script>
 </body>
 </html>
